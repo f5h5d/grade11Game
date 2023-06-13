@@ -59,14 +59,14 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
     public static int defaultPosY = 0;
     // p1 variables
-    public static BufferedImage[] p1 = new BufferedImage[14];
+    public static BufferedImage[] p1 = new BufferedImage[15];
     public static String p1Char = "";
     public static BufferedImage[] p1WalkForward, p1WalkBackward, p1Idle, p1LightPunch, p1Kick, p1Jump, p1JumpKick,
-            p1JumpPunch, p1Duck, p1LowPunch, p1LowKick, p1Block, p1DuckBlock, p1Hit;
+            p1JumpPunch, p1Duck, p1LowPunch, p1LowKick, p1Block, p1DuckBlock, p1Hit, p1Knocked;
     public static boolean isp1Forward, isp1Backward, isp1LightPunch, isp1Kick, isp1Jump, isp1Duck, isp1LowPunch,
-            isp1LowKick, isp1Block, isp1DuckBlock, isp1Hit = false;
+            isp1LowKick, isp1Block, isp1DuckBlock, isp1Hit, isp1Knocked = false;
     public static int p1SpriteNum, p1IdleSpriteNum, p1LightPunchSpriteNum, p1KickSpriteNum, p1JumpSpriteNum,
-            p1DuckSpriteNum, p1LowPunchSpriteNum, p1LowKickSpriteNum, p1BlockSpriteNum, p1DuckBlockSpriteNum, p1HitSpriteNum = 0;
+            p1DuckSpriteNum, p1LowPunchSpriteNum, p1LowKickSpriteNum, p1BlockSpriteNum, p1DuckBlockSpriteNum, p1HitSpriteNum, p1KnockedSpriteNum = 0;
     public static BufferedImage p1CurrentMovement;
     public static int p1PosX = 100;
     public static int p1PosY = 250;
@@ -76,6 +76,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
     public static int p1HoverCharMovement = -50;
     public static boolean p1CharSwitch = false;
     public static int p1Map = -1;
+    public static int p1Combo = 0;
 
     public static int p1KickBind = 86;
     public static int p2KickBind = 46;
@@ -85,16 +86,17 @@ public class Main extends JPanel implements KeyListener, Runnable {
     public static int p2DuckBind = 40;
     public static int p1BlockBind = 88;
     public static int p2BlockBind = 16;
+    public static int p2Combo = 0;
 
     // p2 variables
-    public static BufferedImage[] p2 = new BufferedImage[14];
+    public static BufferedImage[] p2 = new BufferedImage[15];
     public static String p2Char = "";
     public static BufferedImage[] p2WalkForward, p2WalkBackward, p2Idle, p2LightPunch, p2Kick, p2Jump, p2JumpKick,
-            p2JumpPunch, p2Duck, p2LowPunch, p2LowKick, p2Block, p2DuckBlock, p2Hit;
+            p2JumpPunch, p2Duck, p2LowPunch, p2LowKick, p2Block, p2DuckBlock, p2Hit, p2Knocked;
     public static boolean isp2Forward, isp2Backward, isp2LightPunch, isp2Kick, isp2Jump, isp2Duck, isp2LowPunch,
-            isp2LowKick, isp2Block, isp2DuckBlock, isp2Hit = false;
+            isp2LowKick, isp2Block, isp2DuckBlock, isp2Hit, isp2Knocked = false;
     public static int p2SpriteNum, p2IdleSpriteNum, p2LightPunchSpriteNum, p2KickSpriteNum, p2JumpSpriteNum,
-            p2DuckSpriteNum, p2LowPunchSpriteNum, p2LowKickSpriteNum, p2BlockSpriteNum, p2HitSpriteNum, p2DuckBlockSpriteNum = 0;
+            p2DuckSpriteNum, p2LowPunchSpriteNum, p2LowKickSpriteNum, p2BlockSpriteNum, p2HitSpriteNum, p2DuckBlockSpriteNum, p2KnockedSpriteNum = 0;
     public static BufferedImage p2CurrentMovement;
     // public static BufferedImage[] p2Hit;
     // public static boolean isp2Hit = false;
@@ -112,7 +114,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
     public static boolean hasp2Hit = false;
 
     // fonts sizes
-    public static Font largeText, text;
+    public static Font largeText, text, comboText;
 
     // staminas
 
@@ -141,6 +143,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
             largeText = Font.createFont(Font.TRUETYPE_FONT, new File("UI/Act_Of_Rejection.ttf")).deriveFont(80f);
             ge.registerFont(largeText);
+
+            comboText = Font.createFont(Font.TRUETYPE_FONT, new File("UI/Act_Of_Rejection.ttf")).deriveFont(30f);
+            ge.registerFont(comboText);
 
             text = Font.createFont(Font.TRUETYPE_FONT, new File("UI/PressStart2P.ttf")).deriveFont(15f);
             ge.registerFont(text);
@@ -215,6 +220,11 @@ public class Main extends JPanel implements KeyListener, Runnable {
             // hit
             p1[13] = ImageIO.read(new File("Characters/Retsu/p1/hit.png"));
 
+            // knocked
+            p1[14] = ImageIO.read(new File("Characters/Retsu/p1/knocked.png"));
+
+
+
             // forward movement
             p2[0] = ImageIO.read(new File("Characters/Retsu/p2/ForwardWalking.png"));
 
@@ -257,6 +267,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
             // hit
             p2[13] = ImageIO.read(new File("Characters/Retsu/p2/hit.png"));
 
+            // knocked
+            p2[14] = ImageIO.read(new File("Characters/Retsu/p2/knocked.png"));
+
             // finds the amount of sprites and makes that many indexes for each array;
             p1WalkForward = new BufferedImage[p1[0].getWidth() / 200];
 
@@ -285,6 +298,8 @@ public class Main extends JPanel implements KeyListener, Runnable {
             p1DuckBlock = new BufferedImage[p1[12].getWidth() / 200];
 
             p1Hit = new BufferedImage[p1[13].getWidth() / 200];
+
+            p1Knocked = new BufferedImage[p1[14].getWidth() / 200];
 
 
             // finds the amount of sprites and makes that many indexes for each array;
@@ -315,6 +330,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
             p2DuckBlock = new BufferedImage[p2[12].getWidth() / 200];
 
             p2Hit = new BufferedImage[p2[13].getWidth() / 200];
+
+            p2Knocked = new BufferedImage[p2[14].getWidth() / 200];
+            
 
             // loading all the forward walking sprites
             for (int i = 0; i < p1WalkForward.length; i++) {
@@ -392,6 +410,12 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p1Hit[i] = grabImage(p1[13], p1HitSpriteNum);
             }
 
+            // loading all the knocked sprites
+            for (int i = 0; i < p1Knocked.length; i++) {
+                p1KnockedSpriteNum = (i) % p1Knocked.length;
+                p1Knocked[i] = grabImage(p1[14], p1KnockedSpriteNum);
+            }
+
             p1SpriteNum = 0;
             p1IdleSpriteNum = 0;
             p1LightPunchSpriteNum = 0;
@@ -403,6 +427,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
             p1BlockSpriteNum = 0;
             p1DuckBlockSpriteNum = 0;
             p1HitSpriteNum = 0;
+            p1KnockedSpriteNum = 0;
 
             // loading all the forward walking sprites
             for (int i = 0; i < p2WalkForward.length; i++) {
@@ -477,7 +502,13 @@ public class Main extends JPanel implements KeyListener, Runnable {
             // loading all the hit sprites
             for (int i = 0; i < p2Hit.length; i++) {
                 p2HitSpriteNum = (i) % p2Hit.length;
-                p2Hit[i] = grabImage(p2[13], p1HitSpriteNum);
+                p2Hit[i] = grabImage(p2[13], p2HitSpriteNum);
+            }
+
+            // loading all the knocked sprites
+            for (int i = 0; i < p2Knocked.length; i++) {
+                p2KnockedSpriteNum = (i) % p2Knocked.length;
+                p2Knocked[i] = grabImage(p2[14], p2KnockedSpriteNum);
             }
 
             p2SpriteNum = 0;
@@ -491,6 +522,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
             p2BlockSpriteNum = 0;
             p2DuckBlockSpriteNum = 0;
             p2HitSpriteNum = 0;
+            p2KnockedSpriteNum = 0;
 
         } catch (Exception e) {
             System.out.println("Something wrong with the image!");
@@ -536,6 +568,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
         for (int i = 0; i < p1Hit.length; i++) {
             p1Hit[i] = test(p1Hit[i]);
         }
+        for (int i = 0; i < p1Knocked.length; i++) {
+            p1Knocked[i] = test(p1Knocked[i]);
+        }
 
         for (int i = 0; i < p2WalkForward.length; i++) {
             p2WalkForward[i] = test(p2WalkForward[i]);
@@ -577,6 +612,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
         for (int i = 0; i < p2Hit.length; i++) {
             p2Hit[i] = test(p2Hit[i]);
         }
+        for (int i = 0; i < p2Knocked.length; i++) {
+            p2Knocked[i] = test(p2Knocked[i]);
+        }
 
         JFrame frame = new JFrame("Game");
         Main panel = new Main();
@@ -592,7 +630,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
         GradientPaint gradientBackground = new GradientPaint(0, 0, Color.ORANGE, 0, 700, Color.RED);
         Color textColor = new Color(255, 165, 0);
         if (gameState == 0) {
-            windowWidth = 1000;
+            windowWidth = 800;
 
             g2d.setColor(Color.BLACK);
             // g2d.fillRect(0, 0, getWidth(), getHeight());
@@ -907,15 +945,47 @@ public class Main extends JPanel implements KeyListener, Runnable {
             g2d.fillRect(21, 52, p1Stamina * 3, 5);
             g2d.fillRect(getWidth() - 21 - p2Stamina * 3, 52, p2Stamina * 3, 5);
 
-
+            g.setFont(comboText);
+            if (p1Combo > 0) {
+                g.drawString("x" + p1Combo, 20, 250);
+            }
+            if (p2Combo > 0) {
+                g.drawString("x" + p2Combo, 760, 250);
+            }
             if (isp1Hit) {
-                g.drawImage(p1Hit[p1HitSpriteNum], p1PosX, p1PosY, null);
-                p1CurrentMovement = p1Hit[p1HitSpriteNum];
 
-                if (frameController % (20 / p1Hit.length) <= 0) {
-                    p1HitSpriteNum++;
+                if (isp1Jump) {
+                    if (p1JumpSpriteNum + 1 > p1Jump.length / 2) {
+                        p1PosY += 40;
+                    } else {
+                        p1PosY -= 40;
+                    }
+                    p1JumpSpriteNum++;
+                    if (p1JumpSpriteNum == p1Jump.length) {isp1Jump = false; p1JumpSpriteNum = 0;}
                 }
-                
+                if (p2Combo % 5 == 0 && p2Combo > 0) {
+                    g.drawImage(p1Knocked[p1KnockedSpriteNum], p1PosX, p1PosY, null);
+                    p1CurrentMovement = p1Knocked[p1KnockedSpriteNum];
+
+                    if ((frameController % (50 / p1Knocked.length) <= 0 && p1KnockedSpriteNum != 2) || frameController % 50 <= 0 ) {
+                        p1KnockedSpriteNum++;
+                        if (p1KnockedSpriteNum < p1Knocked.length / 2) {
+                            p1PosX -= 40;
+                            p1PosY += 30;
+                        } 
+                        if (p1KnockedSpriteNum == p1Knocked.length - 2) {
+                            p1PosY = defaultPosY;
+                        }
+                    }
+                } 
+                else {
+                    g.drawImage(p1Hit[p1HitSpriteNum], p1PosX, p1PosY, null);
+                    p1CurrentMovement = p1Hit[p1HitSpriteNum];
+
+                    if (frameController % (20 / p1Hit.length) <= 0) {
+                        p1HitSpriteNum++;
+                    }
+                }
 
             }
             else if (isp1Block && p1Stamina >= blockStamina && !isp1Duck) {
@@ -963,9 +1033,10 @@ public class Main extends JPanel implements KeyListener, Runnable {
                     p1CurrentMovement = p1JumpPunch[0];
                     if (checkForCollisions("p1", "high").equals("Collision") && !hasp1Hit) {
                         p2Health -= 7;
-                        // isp2Hit = true;
+                        isp2Hit = true;
                         hasp1Hit = true;
-                        System.out.println("P2 Health: " + p2Health);
+                        p1Combo++;
+                        p2Combo = 0;
                     }
                 }
 
@@ -975,14 +1046,14 @@ public class Main extends JPanel implements KeyListener, Runnable {
                         p1Stamina -= jumpKickStamina;
                         takenP1Stamina = true;
                     }
-                    System.out.println(p1Stamina);
                     g.drawImage(p1JumpKick[0], p1PosX, p1PosY, null);
                     p1CurrentMovement = p1JumpKick[0];
                     if (checkForCollisions("p1", "high").equals("Collision") && !hasp1Hit) {
                         p2Health -= 10;
-                        // isp2Hit = true;
+                        isp2Hit = true;
                         hasp1Hit = true;
-                        System.out.println("P2 Health: " + p2Health);
+                        p1Combo++;
+                        p2Combo = 0;
                     }
                 }
 
@@ -1025,9 +1096,10 @@ public class Main extends JPanel implements KeyListener, Runnable {
                     p1CurrentMovement = p1LowPunch[p1LowPunchSpriteNum];
                     if (checkForCollisions("p1", "low").equals("Collision") && !hasp1Hit) {
                         p2Health -= 5;
-                        // isp2Hit = true;
+                        isp2Hit = true;
                         hasp1Hit = true;
-                        System.out.println("P2 Health: " + p2Health);
+                        p1Combo++;
+                        p2Combo = 0;
                     }
 
                     if (frameController % (24 / p1LowPunch.length) == 0) {
@@ -1047,13 +1119,13 @@ public class Main extends JPanel implements KeyListener, Runnable {
                     p1CurrentMovement = p1LowKick[p1LowKickSpriteNum];
                     if (checkForCollisions("p1", "low").equals("Collision") && !hasp1Hit) {
                         p2Health -= 7;
-                        // isp2Hit = true;
+                        isp2Hit = true;
                         hasp1Hit = true;
-                        System.out.println("P2 Health: " + p2Health);
+                        p1Combo++;
+                        p2Combo = 0;
                     }
                     if (frameController % (48 / p1LowKick.length) == 0) {
                         p1LowKickSpriteNum = (p1LowKickSpriteNum + 1) % p1LowKick.length;
-                        System.out.println(p1PosY);
 
                         if (p1LowKickSpriteNum == 0) {
                             takenP1Stamina = false;
@@ -1081,11 +1153,13 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p1CurrentMovement = p1LightPunch[p1LightPunchSpriteNum];
 
                 if (frameController % (24 / p1LightPunch.length) == 0) {
-                    if (checkForCollisions("p1", "light punch").equals("Collision") && !hasp1Hit) {
+                    if (checkForCollisions("p1", "attack").equals("Collision") && !hasp1Hit) {
                         p2Health -= 5;
-                        // isp2Hit = true;
+                        isp2Hit = true;
                         hasp1Hit = true;
-                        System.out.println("P2 Health: " + p2Health);
+                        p1Combo++;
+                        p2Combo = 0;
+
                     }
                     p1LightPunchSpriteNum++;
                 }
@@ -1096,23 +1170,17 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p1CurrentMovement = p1Kick[p1KickSpriteNum];
 
                 if (frameController % (48 / p1Kick.length) == 0) {
-                    if (checkForCollisions("p1", "kick").equals("Collision") && !hasp1Hit) {
+                    if (checkForCollisions("p1", "attack").equals("Collision") && !hasp1Hit) {
                         p2Health -= 7;
-                        // isp2Hit = true;
+                        isp2Hit = true;
                         hasp1Hit = true;
-                        System.out.println("P2 Health: " + p2Health);
+                        p1Combo++;
+                        p2Combo = 0;
                     }
                     p1KickSpriteNum++;
                 }
             }
 
-            // else if (isp1Hit) {
-            // g.drawImage(p1Hit[p1HitSpriteNum], p1PosX, p1PosY, null);
-            // p1CurrentMovement = p1Hit[p1HitSpriteNum];
-            // if (frameController % 8 == 0) {
-            // p1HitSpriteNum = (p1HitSpriteNum + 1) % (p1[5].getWidth() / 200);
-            // }
-            // }
             else {
                 g.drawImage(p1Idle[p1IdleSpriteNum], p1PosX, p1PosY, null);
                 p1CurrentMovement = p1Idle[p1IdleSpriteNum];
@@ -1125,7 +1193,8 @@ public class Main extends JPanel implements KeyListener, Runnable {
                     (p1LightPunchSpriteNum == p1LightPunch.length) || // checks if punching sprite animation is finished
                     (p1KickSpriteNum == p1Kick.length) || // checks if kicking animation is done
                     (p1HitSpriteNum == p1Hit.length) || 
-                    (p1JumpSpriteNum == p1Jump.length)
+                    (p1JumpSpriteNum == p1Jump.length) || 
+                    (p1KnockedSpriteNum == p1Knocked.length)
 
             ) {
                 isp1Forward = false;
@@ -1140,6 +1209,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p1KickSpriteNum = 0;
                 p1JumpSpriteNum = 0;
                 p1HitSpriteNum = 0;
+                p1KnockedSpriteNum = 0;
                 hasp1Hit = false;
                 takenP1Stamina = false;
             }
@@ -1149,7 +1219,47 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p1Stamina = p1Stamina + 5 >= 100 ? 100 : p1Stamina + 5;
             }
 
-            if (isp2Block && p2Stamina >= blockStamina && !isp2Duck) {
+            if (isp2Hit) {
+                if (isp2Jump) {
+                    if (p2JumpSpriteNum + 1 > p2Jump.length / 2) {
+                        p2PosY += 40;
+                    } else {
+                        p2PosY -= 40;
+                    }
+                    p2JumpSpriteNum++;
+                    if (p2JumpSpriteNum == p2Jump.length) {isp2Jump = false; p2JumpSpriteNum = 0;}
+                }
+
+                if (p1Combo % 5 == 0 && p1Combo > 0) {
+                    g.drawImage(p2Knocked[p2KnockedSpriteNum], p2PosX, p2PosY, null);
+                    p2CurrentMovement = p2Knocked[p2KnockedSpriteNum];
+
+                    if ((frameController % (50 / p2Knocked.length) <= 0 && p2KnockedSpriteNum != 2) || frameController % 50 == 0 ) {
+                        p2KnockedSpriteNum++;
+                        if (p2KnockedSpriteNum < p2Knocked.length / 2) {
+                            p2PosX +=40;
+                            if (checkForCollisions("p2", "walk").equals("Out of bounds")) {
+                                p2PosX = 800 - p2CurrentMovement.getWidth();
+                            }
+                            p2PosY += 30;
+                        } 
+                        if (p2KnockedSpriteNum == p2Knocked.length - 2) {
+                            p2PosY = defaultPosY;
+                        }
+                    }
+                }
+                else {
+                    g.drawImage(p2Hit[p2HitSpriteNum], p2PosX, p2PosY, null);
+                    p2CurrentMovement = p2Hit[p2HitSpriteNum];
+
+                    if (frameController % (20 / p2Hit.length) <= 0) {
+                        p2HitSpriteNum++;
+                    }
+                    System.out.println(p2HitSpriteNum);
+                }
+            }
+
+            else if (isp2Block && p2Stamina >= blockStamina && !isp2Duck) {
                 g.drawImage(p2Block[p2BlockSpriteNum], p2PosX - (p2Char.equals("Retsu") ? 14 : 0), p2PosY, null);
                 p2Stamina -= 1;
 
@@ -1166,6 +1276,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
                     if (!checkForCollisions("p2", "walk").equals("Out of bounds")) {
                         p2PosX += 5;
                     } else {
+                        System.out.println("fjhdkfjksda");
                         p2PosX = windowWidth - p2CurrentMovement.getWidth();
                     }
                     p2SpriteNum++;
@@ -1198,11 +1309,11 @@ public class Main extends JPanel implements KeyListener, Runnable {
                         p1Health -= 7;
                         isp1Hit = true;
                         hasp2Hit = true;
-                        System.out.println("P1 Health: " + p2Health);
+                        p2Combo++;
+                        p1Combo = 0;
                     }
                 } else if (keysPressed.contains(p2KickBind) && p2JumpSpriteNum > 1
-                        && (takenP2Stamina || p2Stamina >= jumpKickStamina)) { // check if they are kicking while
-                                                                               // jumping
+                        && (takenP2Stamina || p2Stamina >= jumpKickStamina)) { 
                     if (!takenP2Stamina) {
                         p2Stamina -= jumpKickStamina;
                         takenP2Stamina = true;
@@ -1211,10 +1322,10 @@ public class Main extends JPanel implements KeyListener, Runnable {
                     p2CurrentMovement = p2JumpKick[0];
                     if (checkForCollisions("p2", "high").equals("Collision") && !hasp2Hit) {
                         p1Health -= 10;
-                        System.out.println("taking away 15");
                         isp1Hit = true;
                         hasp2Hit = true;
-                        System.out.println("P2 Health: " + p2Health);
+                        p2Combo++;
+                        p1Combo = 0;
                     }
                 } else {
                     g.drawImage(p2Jump[p2JumpSpriteNum], p2PosX, p2PosY, null);
@@ -1259,7 +1370,8 @@ public class Main extends JPanel implements KeyListener, Runnable {
                         p1Health -= 5;
                         isp1Hit = true;
                         hasp2Hit = true;
-                        System.out.println("P2 Health: " + p2Health);
+                        p2Combo++;
+                        p1Combo = 0;
                     }
 
                     if (frameController % (24 / p2LowPunch.length) == 0) {
@@ -1275,17 +1387,22 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 }
 
                 else if (isp2LowKick && !keysPressed.contains(p2PunchBind)) {
-                    g.drawImage(p2LowKick[p2LowKickSpriteNum], p2PosX - (p2Char.equals("Retsu") ? 30 : 0), p2PosY,
+                    g.drawImage(p2LowKick[p2LowKickSpriteNum], p2PosX, p2PosY,
                             null);
                     p2CurrentMovement = p2LowKick[p2LowKickSpriteNum];
                     if (checkForCollisions("p2", "low").equals("Collision") && !hasp2Hit) {
                         p1Health -= 7;
                         isp1Hit = true;
                         hasp2Hit = true;
-                        System.out.println("P2 Health: " + p2Health);
+                        p2Combo++;
+                        p1Combo = 0;
                     }
                     if (frameController % (48 / p2LowKick.length) == 0) {
                         p2LowKickSpriteNum = (p2LowKickSpriteNum + 1) % p2LowKick.length;
+                    if (p2Char.equals("Retsu")) { 
+                        if (p2LowKickSpriteNum==2) {p2PosX -=30;}
+                        if (p2LowKickSpriteNum==3) {p2PosX +=30;}
+                    }
 
                         if (p2LowKickSpriteNum == 0) {
                             takenP2Stamina = false;
@@ -1321,11 +1438,12 @@ public class Main extends JPanel implements KeyListener, Runnable {
                         else if (p2LightPunchSpriteNum == 1)
                             p2PosX += 35;
                     }
-                    if (checkForCollisions("p2", "light punch").equals("Collision") && !hasp2Hit) {
+                    if (checkForCollisions("p2", "attack").equals("Collision") && !hasp2Hit) {
                         p1Health -= 5;
                         isp1Hit = true;
                         hasp2Hit = true;
-                        System.out.println("P1 Health: " + p1Health);
+                        p2Combo++;
+                        p1Combo = 0;
                     }
                     p2LightPunchSpriteNum++;
                 }
@@ -1343,23 +1461,16 @@ public class Main extends JPanel implements KeyListener, Runnable {
                         else if (p2KickSpriteNum == 2)
                             p2PosX += 35;
                     }
-                    if (checkForCollisions("p2", "kick").equals("Collision") && !hasp2Hit) {
+                    if (checkForCollisions("p2", "attack").equals("Collision") && !hasp2Hit) {
                         p1Health -= 7;
                         isp1Hit = true;
                         hasp2Hit = true;
-                        System.out.println("P1 Health: " + p1Health);
+                        p2Combo++;
+                        p1Combo = 0;
                     }
                     p2KickSpriteNum++;
                 }
             }
-
-            // else if (isp2Hit) {
-            // g.drawImage(p2Hit[p2HitSpriteNum], p2PosX, p2PosY, null);
-            // p2CurrentMovement = p2Hit[p2HitSpriteNum];
-            // if (frameController % 8 == 0) {
-            // p2HitSpriteNum = (p2HitSpriteNum + 1) % (p2[5].getWidth() / 200);
-            // }
-            // }
 
             else {
                 g.drawImage(p2Idle[p2IdleSpriteNum], p2PosX, p2PosY, null);
@@ -1377,8 +1488,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
             if ((p2SpriteNum == p2WalkForward.length) || // checks if walking sprite animation is finished
                     (p2LightPunchSpriteNum == p2LightPunch.length) || // checks if punching sprite animation is finished
                     (p2KickSpriteNum == p2Kick.length) || // checks if kicking animation is done
-                    // (p2HitSpriteNum == (p2[5].getWidth() / 200) - 1)
-                    (p2JumpSpriteNum == p2Jump.length)
+                    (p2HitSpriteNum == p2Hit.length) || 
+                    (p2JumpSpriteNum == p2Jump.length) || 
+                    (p2KnockedSpriteNum == p2Knocked.length)
 
             ) {
                 isp2Forward = false;
@@ -1386,14 +1498,15 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 isp2LightPunch = false;
                 isp2Kick = false;
                 isp2Jump = false;
-                // isp2Hit = false;
+                isp2Hit = false;
                 frameController = 0;
                 p2SpriteNum = 0;
                 p2LightPunchSpriteNum = 0;
                 p2KickSpriteNum = 0;
                 p2JumpSpriteNum = 0;
                 p2DuckBlockSpriteNum = 0;
-                // p2HitSpriteNum = 0;
+                p2HitSpriteNum = 0;
+                p2KnockedSpriteNum = 0;
                 hasp2Hit = false;
                 takenP2Stamina = false;
             }
@@ -1641,7 +1754,6 @@ public class Main extends JPanel implements KeyListener, Runnable {
         }
 
         else if (gameState == 6) {
-            System.out.println(e.getKeyCode());
             // p1 movement
             if (keysPressed.contains(68)) { // 68 = d
                 isp1Forward = true;
@@ -1885,8 +1997,12 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 }
             } 
             else if (move.equals("low")) {
-                // return "Collision";
                 if (p1Right >= p2Left && p1Top + (p1CurrentMovement.getHeight() / 2) <= p2Bottom) {
+                    return "Collision";
+                }
+            }
+            else if (move.equals("attack")) {
+                if (p1TopRight[0] >= p2TopLeft[0] || p1BottomRight[0] >= p2BottomLeft[0]) {
                     return "Collision";
                 }
             }
@@ -1907,8 +2023,21 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 if (p2Left <= p1Right && p2Top + (p2CurrentMovement.getHeight() / 2) >= p1Top) {
                     return "Collision";
                 }
-            } else {
-                if (p2TopRight[0] > windowWidth || p2BottomRight[0] > windowWidth) {
+            } else if (move.equals("low")) {
+                if (p2Left <= p1Right && p2Top + (p2CurrentMovement.getHeight() / 2) <= p1Bottom) {
+                    return "Collision";
+                }
+            }
+
+            else if (move.equals("attack")) {
+                if (p2TopLeft[0] <= p1TopRight[0] || p2BottomLeft[0] <= p1BottomRight[0]) {
+                    return "Collision";
+                }
+            }
+            
+            else {
+                if (p2Right > 800) {
+                    System.out.println('f');
                     return "Out of bounds";
                 }
 
