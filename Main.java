@@ -37,16 +37,15 @@ public class Main extends JPanel implements KeyListener, Runnable {
     static int block = 11;
     static int duckBlock = 12;
     static int hit = 13;
-    static int knocked = 14;
-    static int special = 15;
-    static int knockedOut = 16;
+    static int duckHit = 14;
+    static int knocked = 15;
+    static int special = 16;
+    static int knockedOut = 17;
 
     public static BufferedImage grabImage(BufferedImage image, int spriteNum) {
-        BufferedImage img = image.getSubimage(200 * spriteNum, 0, 200, 140);
-        return img;
+        return image.getSubimage(200 * spriteNum, 0, 200, 140);
     }
 
-    // dont have a place for now variables
     public static int windowHeight = 367;
     public static int windowWidth = 800;
     public static int gameState = 0;
@@ -69,12 +68,19 @@ public class Main extends JPanel implements KeyListener, Runnable {
     public static BufferedImage ryuPortrait;
     public static BufferedImage comingSoon, comingSoonBig;
 
-    public static BufferedImage[] p1Retsu = new BufferedImage[17];
-    public static BufferedImage[] p2Retsu = new BufferedImage[17];
+    public static int totalMoves = 18;
 
-    public static BufferedImage[] p1Ryu = new BufferedImage[17];
-    public static BufferedImage[] p2Ryu = new BufferedImage[17];
-    public static int totalMoves = 17;
+    public static BufferedImage[] p1Retsu = new BufferedImage[totalMoves];
+    public static BufferedImage[] p2Retsu = new BufferedImage[totalMoves];
+
+    public static BufferedImage[] p1Ryu = new BufferedImage[totalMoves];
+    public static BufferedImage[] p2Ryu = new BufferedImage[totalMoves];
+    public static BufferedImage p1RyuSpecial;
+    public static BufferedImage p2RyuSpecial;
+    public static boolean isp1RyuThrowSpecial = false;
+    public static boolean isp2RyuThrowSpecial = false;
+    public static int p1RyuProjectileX;
+    public static int p2RyuProjectileX;
 
     public static boolean charactersSelected = false;
 
@@ -89,7 +95,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
     public static String startTimer = "3";
     // p1 variables
-    public static BufferedImage[][] p1 = new BufferedImage[17][10];
+    public static BufferedImage[][] p1 = new BufferedImage[totalMoves][10];
     public static String p1Char = "";
     public static BufferedImage p1CurrentMovement;
     public static int p1PosX = 100;
@@ -101,15 +107,17 @@ public class Main extends JPanel implements KeyListener, Runnable {
     public static boolean p1CharSwitch = false;
     public static int p1Map = -1;
     public static int p1Combo = 0;
-    public static boolean p1Action[] = new boolean[17];
-    public static boolean p2Action[] = new boolean[17];
+    public static boolean p1Action[] = new boolean[totalMoves];
+    public static boolean p2Action[] = new boolean[totalMoves];
 
     // p2 variables
-    public static BufferedImage[][] p2 = new BufferedImage[17][10];
+    public static BufferedImage[][] p2 = new BufferedImage[totalMoves][10];
     public static String p2Char = "";
     public static BufferedImage p2CurrentMovement;
-    public static int[] p1Sprite = new int[17];
-    public static int[] p2Sprite = new int[17];
+    public static int[] p1Sprite = new int[totalMoves];
+    public static int[] p2Sprite = new int[totalMoves];
+    public static int[] p1MoveStamina = new int[totalMoves];
+    public static int[] p2MoveStamina = new int[totalMoves];
 
     public static int p2PosX = 700;
     public static int p2PosY = 250;
@@ -133,12 +141,6 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
     public static boolean takenP1Stamina = false;
     public static boolean takenP2Stamina = false;
-    public static int punchStamina = 15;
-    public static int kickStamina = 30;
-    public static int jumpKickStamina = 40;
-    public static int jumppunchStamina = 30;
-    public static int blockStamina = 1;
-    public static int specialStamina = 30;
 
     public static int p1ForwardBind = 68;
     public static int p2ForwardBind = 39;
@@ -172,6 +174,11 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
     public static int[] p1MoveLength = new int[totalMoves];
     public static int[] p2MoveLength = new int[totalMoves];
+
+    public static int p1JumpY;
+    public static int p2JumpY;
+    public static int p1JumpX;
+    public static int p2JumpX;
     public static ArrayList<Integer> keysPressed = new ArrayList();
 
     public Main() {
@@ -210,7 +217,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
             p1retsuBig = ImageIO.read(new File("Characters/Retsu/p1/retsuBig.png"));
 
             p2retsuBig = ImageIO.read(new File("Characters/Retsu/p2/retsuBig.png"));
-            
+
             p1ryuBig = ImageIO.read(new File("Characters/Ryu/p1/ryuBig.png"));
 
             p2ryuBig = ImageIO.read(new File("Characters/Ryu/p2/ryuBig.png"));
@@ -235,12 +242,18 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p2Retsu[i] = ImageIO.read(new File("Characters/Retsu/p2/" + i + ".png"));
 
                 p1Ryu[i] = ImageIO.read(new File("Characters/Ryu/p1/" + i + ".png"));
-                // p2Ryu[i] = ImageIO.read(new File("Characters/Ryu/p2" + i + ".png"));
+                p2Ryu[i] = ImageIO.read(new File("Characters/Ryu/p2/" + i + ".png"));
             }
+
+            p1RyuSpecial = ImageIO.read(new File("Characters/Ryu/p1/ryuSpecial.png"));
+            p2RyuSpecial = ImageIO.read(new File("Characters/Ryu/p2/ryuSpecial.png"));
 
         } catch (IOException e) {
             System.out.println("Something Wrong");
         }
+
+        p1RyuSpecial = test(p1RyuSpecial);
+        p2RyuSpecial = test(p2RyuSpecial);
 
         JFrame frame = new JFrame("Game");
         Main panel = new Main();
@@ -444,6 +457,43 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
         }
 
+        else if (gameState == 4) {
+            g2d.setPaint(gradientBackground);
+            g2d.fillRect(0, 0, 800, 367);
+            g2d.setFont(largeText);
+            g2d.setPaint(Color.WHITE);
+            centerString(g2d, "KEYBIND SELECT", "H100");
+            g2d.setFont(text);
+            for (int i = 0; i < 4; i++) {
+                g.drawRect(30, 152+i*40, 175, 40);
+                g.drawRect(205, 152+i*40, 175, 40);
+                g.drawRect(420, 152+i*40, 175, 40);
+                g.drawRect(595, 152+i*40, 175, 40);
+            }
+            g.drawString("FORWARD: " + (char) p1ForwardBind, 40, 180);
+            g.drawString("BACK:    " + (char) p1BackBind, 40, 220);
+            g.drawString("PUNCH:   " + (char) p1PunchBind, 40, 260);
+            g.drawString("KICK:    " + (char) p1KickBind, 40, 300);
+            g.drawString("JUMP:    " + (char) p1JumpBind, 215, 180);
+            g.drawString("DUCK:    " + (char) p1DuckBind, 215, 220);
+            g.drawString("SPECIAL: " + (char) p1SpecialBind, 215, 260);
+            g.drawString("BLOCK:   " + (char) p1BlockBind, 215, 300);
+
+            if (hoverBlink) {
+                if (p1Hover % 2 == 0) {
+                    g2d.setPaint(new Color(171, 26, 219));
+                    g2d.setStroke(new BasicStroke(3));
+                    g.drawRect(30, 152+(p1Hover)*40, 175, 40);
+                }
+            }
+
+
+
+            if (frameController % 5 == 0) {
+                hoverBlink = hoverBlink ? false : true;
+            }
+        }
+
         else if (gameState == 5) {
             g2d.setPaint(gradientBackground);
             g2d.fillRect(0, 0, 800, 367);
@@ -593,7 +643,6 @@ public class Main extends JPanel implements KeyListener, Runnable {
             if (p2Score == 1) {
                 g.fillOval(490, 70, 10, 10);
             }
-            System.out.println(p1Score);
 
             g2d.setPaint(Color.WHITE);
             g.drawOval(300, 70, 10, 10);
@@ -641,10 +690,12 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 punch(g, "p1");
             else if (p1Action[kick])
                 kick(g, "p1");
+            else if (p1Action[special])
+                special(g, "p1");
             else if (!p1Action[knockedOut])
                 idle(g, "p1");
-            if (p1Action[special])
-                special(g, "p1");
+            if (isp1RyuThrowSpecial)
+                throwRyuSpecial(g, "p1");
 
             if (!p1Action[punch] && !p1Action[kick] && !p1Action[block] && frameController % 15 == 0) {
                 p1Stamina = p1Stamina + 5 >= 100 ? 100 : p1Stamina + 5;
@@ -668,10 +719,12 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 punch(g, "p2");
             else if (p2Action[kick])
                 kick(g, "p2");
+            else if (p2Action[special])
+                special(g, "p2");
             else if (!p2Action[knockedOut])
                 idle(g, "p2");
-            if (p2Action[special])
-                special(g, "p2");
+            if (isp2RyuThrowSpecial)
+                throwRyuSpecial(g, "p2");
 
             if (!p2Action[punch] && !p2Action[kick] && !p2Action[block] && frameController % 15 == 0) {
                 p2Stamina = p2Stamina + 5 >= 100 ? 100 : p2Stamina + 5;
@@ -796,14 +849,11 @@ public class Main extends JPanel implements KeyListener, Runnable {
             p2CurrentMovement = p2[punch][p2Sprite[punch]];
 
             if (frameController % p2MoveLength[punch] == 0) {
-                if (p2Char == "Retsu") {
-                    // this is because character sprite moves when punching so this is to account
-                    // for that movement for the p2
-                    if (p2Sprite[punch] == 0)
-                        p2PosX -= 35;
-                    else if (p2Sprite[punch] == 1)
-                        p2PosX += 35;
-                }
+                if (p2Sprite[punch] == 0)
+                    p2PosX -= 35;
+                else if (p2Sprite[punch] == 1)
+                    p2PosX += 35;
+
                 if (checkForCollisions("p2", "attack").equals("Collision") && !hasp2Hit) {
                     p1Health = p1Health - p2PunchDamage < 0 ? 0 : p1Health - p2PunchDamage;
                     p1Action[hit] = true;
@@ -845,14 +895,10 @@ public class Main extends JPanel implements KeyListener, Runnable {
             g.drawImage(p2[kick][p2Sprite[kick]], p2PosX, p2PosY, null);
             p2CurrentMovement = p2[kick][p1Sprite[kick]];
             if (frameController % p2MoveLength[kick] == 0) {
-                if (p2Char == "Retsu") {
-                    // this is because character sprite moves when punching so this is to account
-                    // for that movement for the p2
-                    if (p2Sprite[kick] == 1)
-                        p2PosX -= 35;
-                    else if (p2Sprite[kick] == 2)
-                        p2PosX += 35;
-                }
+                if (p2Sprite[kick] == 1)
+                    p2PosX -= 35;
+                else if (p2Sprite[kick] == 2)
+                    p2PosX += 35;
                 if (checkForCollisions("p2", "attack").equals("Collision") && !hasp2Hit) {
                     p1Health = p1Health - p2KickDamage < 0 ? 0 : p1Health - p2KickDamage;
                     p1Action[hit] = true;
@@ -872,9 +918,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
     public void jump(Graphics g, String player) {
         if (player.equals("p1")) {
             if (p1Action[punch] && p1Sprite[jump] > 1
-                    && (takenP1Stamina || p1Stamina >= jumppunchStamina)) {
+                    && (takenP1Stamina || p1Stamina >= p1MoveStamina[jumpPunch])) {
                 if (!takenP1Stamina) {
-                    p1Stamina -= jumppunchStamina;
+                    p1Stamina -= p1MoveStamina[jumpPunch];
                     takenP1Stamina = true;
                 }
                 g.drawImage(p1[jumpPunch][0], p1PosX, p1PosY, null);
@@ -889,9 +935,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
             }
 
             else if (p1Action[kick] && p1Sprite[jump] > 1
-                    && (takenP1Stamina || p1Stamina >= jumpKickStamina) && !keysPressed.contains(p1PunchBind)) {
+                    && (takenP1Stamina || p1Stamina >= p1MoveStamina[jumpKick]) && !keysPressed.contains(p1PunchBind)) {
                 if (!takenP1Stamina) {
-                    p1Stamina -= jumpKickStamina;
+                    p1Stamina -= p1MoveStamina[jumpKick];
                     takenP1Stamina = true;
                 }
                 g.drawImage(p1[jumpKick][0], p1PosX, p1PosY, null);
@@ -912,15 +958,26 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
             if (frameController % p1MoveLength[jump] == 0) {
                 if (keysPressed.contains(68) && !checkForCollisions("p1", "jump").equals("Collision")) {
-                    p1PosX += 20;
+                    p1PosX += p1JumpX;
                 }
                 if (keysPressed.contains(65) && !checkForCollisions("p1", "jump").equals("Out of bounds")) {
-                    p1PosX -= 20;
+                    p1PosX -= p1JumpX;
                 }
-                if (p1Sprite[jump] + 1 > p1[jump].length / 2) {
-                    p1PosY += 40;
+                if (p1[jump].length % 2 == 0) {
+                    if (p1Sprite[jump] + 1 > p1[jump].length / 2) {
+                        p1PosY += p1JumpY;
+                    } else {
+                        p1PosY -= p1JumpY;
+                    }
                 } else {
-                    p1PosY -= 40;
+                    if (p1Sprite[jump] != p1[jump].length / 2) {
+                        if (p1Sprite[jump] + 1 > p1[jump].length / 2) {
+                            p1PosY += p1JumpY;
+                        } else {
+                            p1PosY -= p1JumpY;
+                        }
+                    }
+
                 }
                 p1Sprite[jump] = (p1Sprite[jump] + 1) % p1[jump].length;
                 if (p1Sprite[jump] == 0) {
@@ -932,9 +989,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
             }
         } else {
             if (p2Action[punch] && p2Sprite[jump] > 1
-                    && (takenP2Stamina || p2Stamina >= jumppunchStamina)) {
+                    && (takenP2Stamina || p2Stamina >= p2MoveStamina[jumpPunch])) {
                 if (!takenP2Stamina) {
-                    p2Stamina -= jumppunchStamina;
+                    p2Stamina -= p2MoveStamina[jumpPunch];
                     takenP2Stamina = true;
                 }
                 g.drawImage(p2[jumpPunch][0], p2PosX, p2PosY, null);
@@ -947,9 +1004,9 @@ public class Main extends JPanel implements KeyListener, Runnable {
                     p1Combo = 0;
                 }
             } else if (p2Action[kick] && p2Sprite[jump] > 1
-                    && (takenP2Stamina || p2Stamina >= jumpKickStamina)) {
+                    && (takenP2Stamina || p2Stamina >= p2MoveStamina[jumpKick])) {
                 if (!takenP2Stamina) {
-                    p2Stamina -= jumpKickStamina;
+                    p2Stamina -= p2MoveStamina[jumpKick];
                     takenP2Stamina = true;
                 }
                 g.drawImage(p2[jumpKick][0], p2PosX, p2PosY, null);
@@ -968,15 +1025,26 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
             if (frameController % p2MoveLength[jump] == 0) {
                 if (keysPressed.contains(37) && !checkForCollisions("p2", "jump").equals("Collision")) {
-                    p2PosX -= 20;
+                    p2PosX -= p2JumpX;
                 }
                 if (keysPressed.contains(39) && !checkForCollisions("p2", "jump").equals("Out of bounds")) {
-                    p2PosX += 20;
+                    p2PosX += p2JumpX;
                 }
-                if (p2Sprite[jump] + 1 > p2[jump].length / 2) {
-                    p2PosY += 40;
+                if (p2[jump].length % 2 == 0) {
+                    if (p2Sprite[jump] + 1 > p2[jump].length / 2) {
+                        p2PosY += p2JumpY;
+                    } else {
+                        p2PosY -= p2JumpY;
+                    }
                 } else {
-                    p2PosY -= 40;
+                    if (p2Sprite[jump] != p2[jump].length / 2) {
+                        if (p2Sprite[jump] + 1 > p2[jump].length / 2) {
+                            p2PosY += p2JumpY;
+                        } else {
+                            p2PosY -= p2JumpY;
+                        }
+                    }
+
                 }
                 p2Sprite[jump] = (p2Sprite[jump] + 1) % p2[jump].length;
                 if (p2Sprite[jump] == 0) {
@@ -992,10 +1060,12 @@ public class Main extends JPanel implements KeyListener, Runnable {
     public void duck(Graphics g, String player) {
         if (player.equals("p1")) {
             if (p1Action[block]) {
-                g.drawImage(p1[duckBlock][p1Sprite[duckBlock]], p1PosX, p1PosY - (p1Char.equals("Retsu") ? 15 : 0),
+                g.drawImage(p1[duckBlock][p1Sprite[duckBlock]], p1PosX,
+                        p1PosY - (p1Char.equals("Retsu") ? 15 : p1Char.equals("Ryu") ? 29 : 0),
                         null);
                 p1CurrentMovement = p1[duckBlock][p1Sprite[duckBlock]];
                 p1Stamina--;
+
                 if (frameController % p1MoveLength[duckBlock] == 0) {
                     p1Sprite[duckBlock] = (p1Sprite[duckBlock] + 1) % p1[duckBlock].length;
                 }
@@ -1065,7 +1135,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
         } else {
             if (p2Action[block]) {
                 g.drawImage(p2[duckBlock][p2Sprite[duckBlock]], p2PosX - (p2Char.equals("Retsu") ? 15 : 0),
-                        p2PosY - (p2Char.equals("Retsu") ? 15 : 0), null);
+                        p2PosY - (p2Char.equals("Retsu") ? 15 : p2Char.equals("Ryu") ? 29 : 0), null);
                 p2CurrentMovement = p2[duckBlock][p2Sprite[duckBlock]];
                 p2Stamina--;
                 // isp2Block = true;
@@ -1091,10 +1161,10 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
                 if (frameController % p2MoveLength[duckPunch] == 0) {
                     p2Sprite[duckPunch] = (p2Sprite[duckPunch] + 1) % p2[duckPunch].length;
-                    if (p2Sprite[duckPunch] == 1 && p2Char.equals("Retsu")) {
+                    if (p2Sprite[duckPunch] == 1) {
                         p2PosX -= 20;
                     }
-                    if (p2Sprite[duckPunch] == p2[duckPunch].length - 1 && p2Char.equals("Retsu")) {
+                    if (p2Sprite[duckPunch] == p2[duckPunch].length - 1) {
                         p2PosX += 20;
                     }
 
@@ -1129,6 +1199,14 @@ public class Main extends JPanel implements KeyListener, Runnable {
                             p2PosX += 30;
                         }
                     }
+                    if (p2Char.equals("Ryu")) {
+                        if (p2Sprite[duckKick] == 1) {
+                            p2PosX -= 30;
+                        }
+                        if (p2Sprite[duckKick] == 2) {
+                            p2PosX += 30;
+                        }
+                    }
 
                     if (p2Sprite[duckKick] == 0) {
                         takenP2Stamina = false;
@@ -1156,22 +1234,32 @@ public class Main extends JPanel implements KeyListener, Runnable {
         if (player.equals("p1")) {
 
             if (p1Action[jump]) {
-                if (p1Sprite[jump] + 1 > p1[jump].length / 2) {
-                    p1PosY += 40;
+                if (p1[jump].length % 2 == 0) {
+                    if (p1Sprite[jump] + 1 > p1[jump].length / 2) {
+                        p1PosY += p1JumpY;
+                    } else {
+                        p1PosY -= p1JumpY;
+                    }
                 } else {
-                    p1PosY -= 40;
+                    if (p1Sprite[jump] != p1[jump].length / 2) {
+                        if (p1Sprite[jump] + 1 > p1[jump].length / 2) {
+                            p1PosY += p1JumpY;
+                        } else {
+                            p1PosY -= p1JumpY;
+                        }
+                    }
                 }
                 p1Sprite[jump] = (p1Sprite[jump] + 1) % p1[jump].length;
                 if (p1Sprite[jump] == 0) {
                     p1Action[jump] = false;
                 }
             }
+
             if (p2Combo % 5 == 0 && p2Combo > 0) {
                 g.drawImage(p1[knocked][p1Sprite[knocked]], p1PosX, p1PosY, null);
                 p1CurrentMovement = p1[knocked][p1Sprite[knocked]];
 
-                if ((frameController % p1MoveLength[knocked] <= 0 && p1Sprite[knocked] != 2)
-                        || frameController % 50 <= 0) {
+                if (frameController % p1MoveLength[knocked] <= 0) {
                     p1Sprite[knocked] = (p1Sprite[knocked] + 1) % p1[knocked].length;
                     if (p1Sprite[knocked] == 0)
                         p1Action[hit] = false;
@@ -1182,16 +1270,37 @@ public class Main extends JPanel implements KeyListener, Runnable {
                         } else {
                             p1PosX = 0;
                         }
-
-                        p1PosY = defaultPosY + 120 > p1PosY && p1Sprite[knocked] != 0 ? p1PosY + 30 : p1PosY;
-
-                        if (p1PosY >= 367) {
-                            p1PosY = 340;
+                    }
+                    if (p1Char.equals("Ryu")) {
+                        if (p1Sprite[knocked] == 1) {
+                            p1PosY = defaultPosY + 20;
+                        } else if (p1Sprite[knocked] < 4) {
+                            p1PosY += 20;
+                        } else if (p1Sprite[knocked] > 5) {
+                            p1PosY -= 20;
                         }
+                    } else if (p1Char.equals("Retsu")) {
+                        if (p1Sprite[knocked] == 1) {
+                            p1PosY = defaultPosY + 30;
+                        } else if (p1Sprite[knocked] < 3 && p1Sprite[knocked] != 0)
+                            p1PosY += 30;
+                        else if (p1Sprite[knocked] == 6)
+                            p1PosY = defaultPosY;
+                        else if (p1Sprite[knocked] > 3)
+                            p1PosY -= 15;
                     }
-                    if (p1Sprite[knocked] == p1[knocked].length - 2) {
-                        p1PosY = defaultPosY;
-                    }
+                }
+            }
+
+            else if (p1Action[duck]) {
+                g.drawImage(p1[duckHit][p1Sprite[duckHit]], p1PosX, p1PosY, null);
+                p1CurrentMovement = p1[duckHit][p1Sprite[duckHit]];
+
+                if (frameController % p1MoveLength[duckHit] == 0) {
+                    p1Sprite[duckHit] = (p1Sprite[duckHit] + 1) % p1[duckHit].length;
+                    if (p1Sprite[duckHit] == 0)
+                        p1Action[hit] = false;
+
                 }
             } else {
                 g.drawImage(p1[hit][p1Sprite[hit]], p1PosX, p1PosY, null);
@@ -1205,13 +1314,22 @@ public class Main extends JPanel implements KeyListener, Runnable {
             }
         } else {
             if (p2Action[jump]) {
-                if (p2Sprite[jump] + 1 > p2[jump].length / 2) {
-                    p2PosY += 40;
+                if (p2[jump].length % 2 == 0) {
+                    if (p2Sprite[jump] + 1 > p2[jump].length / 2) {
+                        p2PosY += p2JumpY;
+                    } else {
+                        p2PosY -= p2JumpY;
+                    }
                 } else {
-                    p2PosY -= 40;
+                    if (p2Sprite[jump] != p2[jump].length / 2) {
+                        if (p2Sprite[jump] + 1 > p2[jump].length / 2) {
+                            p2PosY += p2JumpY;
+                        } else {
+                            p2PosY -= p2JumpY;
+                        }
+                    }
                 }
                 p2Sprite[jump] = (p2Sprite[jump] + 1) % p2[jump].length;
-
                 if (p2Sprite[jump] == 0) {
                     p2Action[jump] = false;
                 }
@@ -1221,8 +1339,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 g.drawImage(p2[knocked][p2Sprite[knocked]], p2PosX, p2PosY, null);
                 p2CurrentMovement = p2[knocked][p2Sprite[knocked]];
 
-                if ((frameController % p2MoveLength[knocked] == 0 && p2Sprite[knocked] != 2)
-                        || frameController % 50 == 0) {
+                if (frameController % p2MoveLength[knocked] == 0) {
                     p2Sprite[knocked] = (p2Sprite[knocked] + 1) % p2[knocked].length;
                     if (p2Sprite[knocked] == 0)
                         p2Action[hit] = false;
@@ -1232,14 +1349,32 @@ public class Main extends JPanel implements KeyListener, Runnable {
                         if (checkForCollisions("p2", "walk").equals("Out of bounds") && p2Sprite[knocked] != 0) {
                             p2PosX = 800 - p2CurrentMovement.getWidth();
                         }
-                        p2PosY = defaultPosY + 120 > p2PosY && p2Sprite[knocked] != 0 ? p2PosY + 30 : p2PosY;
-                        if (p2PosY >= 300) {
-                            p2PosY = 300;
+                    }
+                    if (p2Char.equals("Ryu")) {
+                        if (p2Sprite[knocked] < 4) {
+                            p2PosY += 20;
+                        } else if (p2Sprite[knocked] > 5) {
+                            p2PosY -= 20;
                         }
+                    } else if (p1Char.equals("Retsu")) {
+                        if (p2Sprite[knocked] < 3 && p2Sprite[knocked] != 0)
+                            p2PosY += 30;
+                        else if (p2Sprite[knocked] == 6)
+                            p2PosY = defaultPosY;
+                        else if (p2Sprite[knocked] > 3)
+                            p2PosY -= 15;
                     }
-                    if (p2Sprite[knocked] == p2[knocked].length - 2) {
-                        p2PosY = defaultPosY;
-                    }
+                }
+            }
+
+            else if (p2Action[duck]) {
+                g.drawImage(p2[duckHit][p2Sprite[duckHit]], p2PosX, p2PosY, null);
+                p2CurrentMovement = p2[duckHit][p2Sprite[duckHit]];
+
+                if (frameController % p2MoveLength[duckHit] == 0) {
+                    p2Sprite[duckHit] = (p2Sprite[duckHit] + 1) % p2[duckHit].length;
+                    if (p2Sprite[duckHit] == 0)
+                        p2Action[hit] = false;
                 }
             } else {
                 g.drawImage(p2[hit][p2Sprite[hit]], p2PosX, p2PosY, null);
@@ -1259,15 +1394,15 @@ public class Main extends JPanel implements KeyListener, Runnable {
             g.drawImage(p1[block][p1Sprite[block]], p1PosX, p1PosY, null);
             p1CurrentMovement = p1[block][p1Sprite[block]];
             p1Stamina -= 1;
-            if (p1Stamina - blockStamina <= 0) {
+            if (p1Stamina - 1 <= 0) {
                 p1Sprite[block] = 0;
                 p1Action[block] = false;
             }
         } else {
-            g.drawImage(p2[block][p2Sprite[block]], p2PosX - (p2Char.equals("Retsu") ? 14 : 0), p2PosY, null);
+            g.drawImage(p2[block][p2Sprite[block]], p2PosX - 14, p2PosY, null);
             p2CurrentMovement = p2[block][p2Sprite[block]];
             p2Stamina -= 1;
-            if (p2Stamina - blockStamina <= 0) {
+            if (p2Stamina - 1 <= 0) {
                 p2Sprite[block] = 0;
                 p2Action[block] = false;
             }
@@ -1282,22 +1417,32 @@ public class Main extends JPanel implements KeyListener, Runnable {
                                 : p1[special][p1Sprite[special]].getWidth()),
                         defaultPosY - (p1Sprite[special] == 2 ? 20 : 0), null);
                 p1CurrentMovement = p1[special][p1Sprite[special]];
+
+                if (checkForCollisions("p1", p1Char + "Special").equals("Collision") && !hasp1Hit) {
+                    p2Action[hit] = true;
+                    hasp1Hit = true;
+                    p2Health = p2Health - p1SpecialDamage < 0 ? 0 : p2Health - p1SpecialDamage;
+                    p1Combo++;
+                    p2Combo = 0;
+                }
             }
 
-            if (checkForCollisions("p1", p1Char + "Special").equals("Collision") && !hasp1Hit) {
-                p2Action[hit] = true;
-                hasp1Hit = true;
-                p2Health = p2Health - p1SpecialDamage < 0 ? 0 : p2Health - p1SpecialDamage;
-                p1Combo++;
-                p2Combo = 0;
+            if (p1Char.equals("Ryu")) {
+                g.drawImage(p1[special][p1Sprite[special]], p1PosX, p1PosY, null);
+                p1CurrentMovement = p1[special][p1Sprite[special]];
             }
+
             if (frameController % p1MoveLength[special] == 0) {
                 p1Sprite[special] = (p1Sprite[special] + 1) % p1[special].length;
-                if (p1Sprite[special] == 1)
-                    p1Stamina -= specialStamina;
+                if (p1Sprite[special] == 1 && !p1Char.equals("Ryu"))
+                    p1Stamina -= p1MoveStamina[special];
                 if (p1Sprite[special] == 0) {
                     p1Action[special] = false;
                     hasp1Hit = false;
+                    if (p1Char.equals("Ryu")) {
+                        isp1RyuThrowSpecial = true;
+                        p1RyuProjectileX = p1PosX;
+                    }
                 }
 
             }
@@ -1308,22 +1453,32 @@ public class Main extends JPanel implements KeyListener, Runnable {
                                 : p2[special][p2Sprite[special]].getWidth()),
                         defaultPosY - (p2Sprite[special] == 2 ? 20 : 0), null);
                 p2CurrentMovement = p2[special][p2Sprite[special]];
+
+                if (checkForCollisions("p2", p2Char + "Special").equals("Collision") && !hasp2Hit) {
+                    p1Action[hit] = true;
+                    hasp2Hit = true;
+                    p1Health = p1Health - p1SpecialDamage < 0 ? 0 : p1Health - p1SpecialDamage;
+                    p2Combo++;
+                    p1Combo = 0;
+                }
             }
 
-            if (checkForCollisions("p2", p2Char + "Special").equals("Collision") && !hasp2Hit) {
-                p1Action[hit] = true;
-                hasp2Hit = true;
-                p1Health = p1Health - p1SpecialDamage < 0 ? 0 : p1Health - p1SpecialDamage;
-                p2Combo++;
-                p1Combo = 0;
+            if (p2Char.equals("Ryu")) {
+                g.drawImage(p2[special][p2Sprite[special]], p2PosX, p2PosY, null);
+                p2CurrentMovement = p2[special][p2Sprite[special]];
             }
+
             if (frameController % p2MoveLength[special] == 0) {
                 p2Sprite[special] = (p2Sprite[special] + 1) % p2[special].length;
                 if (p2Sprite[special] == 1)
-                    p2Stamina -= specialStamina;
+                    p2Stamina -= p2MoveStamina[special];
                 if (p2Sprite[special] == 0) {
                     p2Action[special] = false;
                     hasp2Hit = false;
+                    if (p2Char.equals("Ryu")) {
+                        isp2RyuThrowSpecial = true;
+                        p2RyuProjectileX = p2PosX;
+                    }
                 }
             }
         }
@@ -1466,6 +1621,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
             }
             if (keysPressed.contains(69)) { // 69 = e
                 p1Char = p1Hover == 0 ? "Retsu" : p1Hover == 1 ? "Ryu" : "";
+                System.out.println(p1Char);
                 if (!p2Char.equals("")) {
                     loadSprites();
                     gameState = 4;
@@ -1633,15 +1789,15 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p1Action[jump] = true;
             }
             if (keysPressed.contains(p1PunchBind) && !p1Action[hit]) { // 69 = e
-                if (p1Stamina >= punchStamina && !p1Action[punch] && !p1Action[kick]) {
-                    p1Stamina -= punchStamina;
+                if (p1Stamina >= p1MoveStamina[punch] && !p1Action[punch] && !p1Action[kick]) {
+                    p1Stamina -= p1MoveStamina[punch];
                     p1Action[punch] = true;
                 }
 
             }
             if (keysPressed.contains(p1KickBind) && !p1Action[hit]) { // 81 = q
-                if (p1Stamina >= kickStamina && !p1Action[punch] && !p1Action[kick]) {
-                    p1Stamina -= kickStamina;
+                if (p1Stamina >= p1MoveStamina[kick] && !p1Action[punch] && !p1Action[kick]) {
+                    p1Stamina -= p1MoveStamina[kick];
                     p1Action[kick] = true;
                 }
             }
@@ -1655,7 +1811,7 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p1Action[block] = true;
             }
 
-            if (keysPressed.contains(p1SpecialBind) && !p1Action[hit] && p1Stamina >= specialStamina
+            if (keysPressed.contains(p1SpecialBind) && !p1Action[hit] && p1Stamina >= p1MoveStamina[special]
                     && !p1Action[special]) {
                 p1Action[special] = true;
             }
@@ -1671,14 +1827,14 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p2Action[jump] = true;
             }
             if (keysPressed.contains(p2PunchBind) && !p2Action[hit]) { // 47 = /
-                if (p2Stamina >= punchStamina && !p2Action[punch] && !p2Action[kick]) {
-                    p2Stamina -= p2Action[punch] ? 0 : punchStamina;
+                if (p2Stamina >= p2MoveStamina[punch] && !p2Action[punch] && !p2Action[kick]) {
+                    p2Stamina -= p2Action[punch] ? 0 : p2MoveStamina[punch];
                     p2Action[punch] = true;
                 }
             }
             if (keysPressed.contains(p2KickBind) && !p2Action[hit]) { // 46 = .
-                if (p2Stamina >= kickStamina && !p2Action[punch] && !p2Action[kick]) {
-                    p2Stamina -= kickStamina;
+                if (p2Stamina >= p2MoveStamina[kick] && !p2Action[punch] && !p2Action[kick]) {
+                    p2Stamina -= p2MoveStamina[kick];
                     p2Action[kick] = true;
                 }
             }
@@ -1687,12 +1843,11 @@ public class Main extends JPanel implements KeyListener, Runnable {
                 p2Action[duck] = true;
                 p2PosY += 30;
             }
-            System.out.println(e.getKeyCode());
             if (keysPressed.contains(p2BlockBind) && !p2Action[hit] && p2Stamina >= 30 && !p2Action[knockedOut]
                     && !p2Action[jump]) {
                 p2Action[block] = true;
             }
-            if (keysPressed.contains(p2SpecialBind) && !p2Action[hit] && p2Stamina >= specialStamina
+            if (keysPressed.contains(p2SpecialBind) && !p2Action[hit] && p2Stamina >= p2MoveStamina[special]
                     && !p2Action[special]) {
                 p2Action[special] = true;
             }
@@ -1836,6 +1991,13 @@ public class Main extends JPanel implements KeyListener, Runnable {
         if (playerToCheck.equals("p1")) {
             if (p2Action[block])
                 return "";
+
+            else if (move.equals("high") && p1Char.equals("Ryu")) {
+                if (p1Right >= p2Left && p1Top >= p2Top) {
+                    return "Collision";
+                }
+
+            }
             if (move.equals("high")) {
                 if (p1Right >= p2Left && p1Top + (p1CurrentMovement.getHeight() / 2) >= p2Top) {
                     return "Collision";
@@ -1856,6 +2018,14 @@ public class Main extends JPanel implements KeyListener, Runnable {
 
             else if (move.equals("RetsuSpecial")) {
                 if (p1Right + 100 > p2Left && p1Right + 100 <= p2Left + p2CurrentMovement.getWidth()) {
+                    return "Collision";
+                }
+            }
+
+            else if (move.equals("ryuSpecial")) {
+                if (p1RyuProjectileX + p1RyuSpecial.getWidth() > p2Left
+                        && p1RyuProjectileX + p1RyuSpecial.getWidth() < p2Right
+                        && p2PosY >= defaultPosY - p1RyuSpecial.getHeight() && p2PosY <= defaultPosY) {
                     return "Collision";
                 }
             }
@@ -1895,6 +2065,15 @@ public class Main extends JPanel implements KeyListener, Runnable {
                         : p2CurrentMovement.getWidth();
                 if (p2Left - clonePositionX < p1Right
                         && p2Left - clonePositionX >= p1Right - p1CurrentMovement.getWidth()) {
+                    return "Collision";
+                }
+            }
+
+            else if (move.equals("ryuSpecial")) {
+                System.out.println(p2RyuProjectileX);
+                System.out.println(p1PosX);
+                if (p2RyuProjectileX < p1Right && p2RyuProjectileX > p1PosX
+                        && p1PosY >= defaultPosY - p2RyuSpecial.getHeight() && p1PosY <= defaultPosY) {
                     return "Collision";
                 }
             }
@@ -1968,35 +2147,83 @@ public class Main extends JPanel implements KeyListener, Runnable {
         }
     }
 
+    public void throwRyuSpecial(Graphics g, String player) {
+        if (player.equals("p1")) {
+            if (p1RyuProjectileX == p1PosX) {
+                p1Stamina -= p1MoveStamina[special];
+            }
+            g.drawImage(p1RyuSpecial, p1RyuProjectileX, defaultPosY, null);
+            if (frameController % 5 == 0) {
+                p1RyuProjectileX += 25;
+            }
+            if (checkForCollisions("p1", "ryuSpecial").equals("Collision")) {
+                p2Health = p2Health - p1SpecialDamage < 0 ? 0 : p2Health - p1SpecialDamage;
+                p2Action[hit] = true;
+                p1Combo++;
+                p2Combo = 0;
+                isp1RyuThrowSpecial = false;
+            }
+
+            if (p1RyuProjectileX >= 800) {
+                isp1RyuThrowSpecial = false;
+            }
+        } else {
+            if (p2RyuProjectileX == p2PosX) {
+                p2Stamina -= p2MoveStamina[special];
+            }
+            g.drawImage(p2RyuSpecial, p2RyuProjectileX, defaultPosY, null);
+            if (frameController % 5 == 0) {
+                p2RyuProjectileX -= 25;
+            }
+            if (checkForCollisions("p2", "ryuSpecial").equals("Collision")) {
+                p1Health = p1Health - p2SpecialDamage < 0 ? 0 : p1Health - p2SpecialDamage;
+                p1Action[hit] = true;
+                p2Combo++;
+                p1Combo = 0;
+                isp2RyuThrowSpecial = false;
+            }
+
+            if (p2RyuProjectileX <= 0) {
+                isp2RyuThrowSpecial = false;
+            }
+        }
+    }
+
     public void loadSprites() {
         try {
-             BufferedImage[] p1Character = new BufferedImage[totalMoves]; 
-             BufferedImage[] p2Character = new BufferedImage[totalMoves]; 
+            BufferedImage[] p1Character = new BufferedImage[totalMoves];
+            BufferedImage[] p2Character = new BufferedImage[totalMoves];
 
-            if (p1Char.equals("Retsu")) p1Character = p1Retsu;
-            if (p2Char.equals("Retsu")) p2Character = p2Retsu;
+            if (p1Char.equals("Retsu"))
+                p1Character = p1Retsu;
+            if (p2Char.equals("Retsu"))
+                p2Character = p2Retsu;
 
-            if (p1Char.equals("Ryu")) p1Character = p1Ryu;
-            // if (p2Char.equals("Ryu")) p2Character = p2Ryu;
+            if (p1Char.equals("Ryu"))
+                p1Character = p1Ryu;
+            if (p2Char.equals("Ryu"))
+                p2Character = p2Ryu;
 
-                for (int i = 0; i < totalMoves; i++) {
-                    p1[i] = new BufferedImage[p1Character[i].getWidth() / 200];
-                    for (int x = 0; x < p1[i].length; x++) {
-                        p1Sprite[i] = x % p1[i].length;
-                        p1[i][x] = grabImage(p1Retsu[i], p1Sprite[i]);
-                        p1Sprite[i] = 0;
-                        p1[i][x] = test(p1[i][x]);
-                    }
+            for (int i = 0; i < totalMoves; i++) {
+                p1[i] = new BufferedImage[p1Character[i].getWidth() / 200];
+                for (int x = 0; x < p1[i].length; x++) {
+                    p1[i][x] = p1Character[i];
+                    p1Sprite[i] = x % p1[i].length;
+                    p1[i][x] = grabImage(p1[i][x], p1Sprite[i]);
+                    p1Sprite[i] = 0;
+                    p1[i][x] = test(p1[i][x]);
                 }
-                for (int i = 0; i < totalMoves; i++) {
-                    p2[i] = new BufferedImage[p2Character[i].getWidth() / 200];
-                    for (int x = 0; x < p2[i].length; x++) {
-                        p2Sprite[i] = x % p2[i].length;
-                        p2[i][x] = grabImage(p2Retsu[i], p2Sprite[i]);
-                        p2Sprite[i] = 0;
-                        p2[i][x] = test(p2[i][x]);
-                    }
+            }
+            for (int i = 0; i < totalMoves; i++) {
+                p2[i] = new BufferedImage[p2Character[i].getWidth() / 200];
+                for (int x = 0; x < p2[i].length; x++) {
+                    p2[i][x] = p2Character[i];
+                    p2Sprite[i] = x % p2[i].length;
+                    p2[i][x] = grabImage(p2[i][x], p2Sprite[i]);
+                    p2Sprite[i] = 0;
+                    p2[i][x] = test(p2[i][x]);
                 }
+            }
         } catch (Exception e) {
             System.out.println("something wrong");
         }
@@ -2013,9 +2240,18 @@ public class Main extends JPanel implements KeyListener, Runnable {
             p1MoveLength[duck] = 48;
             p1MoveLength[knocked] = 15;
             p1MoveLength[hit] = 5;
+            p1MoveLength[duckHit] = 5;
             p1MoveLength[special] = 10;
             p1MoveLength[knockedOut] = 10;
             p1MoveLength[idle] = 8;
+            p1JumpX = 20;
+            p1JumpY = 60;
+
+            p1MoveStamina[punch] = 15;
+            p1MoveStamina[kick] = 30;
+            p1MoveStamina[jumpKick] = 40;
+            p1MoveStamina[jumpPunch] = 30;
+            p1MoveStamina[special] = 30;
         }
         if (p2Char.equals("Retsu")) {
             p2MoveLength[forward] = 3;
@@ -2029,9 +2265,70 @@ public class Main extends JPanel implements KeyListener, Runnable {
             p2MoveLength[duck] = 48;
             p2MoveLength[knocked] = 15;
             p2MoveLength[hit] = 5;
+            p2MoveLength[duckHit] = 5;
             p2MoveLength[special] = 10;
             p2MoveLength[knockedOut] = 10;
             p2MoveLength[idle] = 8;
+            p2JumpX = 20;
+            p2JumpY = 60;
+
+            p2MoveStamina[punch] = 15;
+            p2MoveStamina[kick] = 30;
+            p2MoveStamina[jumpKick] = 40;
+            p2MoveStamina[jumpPunch] = 30;
+            p2MoveStamina[special] = 30;
+        }
+
+        if (p1Char.equals("Ryu")) {
+            p1MoveLength[forward] = 3; // work
+            p1MoveLength[back] = 3; // work
+            p1MoveLength[punch] = 10; // work
+            p1MoveLength[kick] = 10; // sprite mis alligned (FIXED)
+            p1MoveLength[jump] = 7; // goes too down (FIXED)
+            p1MoveLength[duckBlock] = 48; // goes further down on the block (FIXED)
+            p1MoveLength[duckPunch] = 10; // work
+            p1MoveLength[duckKick] = 10; // work
+            p1MoveLength[duck] = 48; // work
+            p1MoveLength[knocked] = 8; // messed up
+            p1MoveLength[hit] = 5; // work
+            p1MoveLength[duckHit] = 5;
+            p1MoveLength[special] = 10;
+            p1MoveLength[knockedOut] = 10; // messed
+            p1MoveLength[idle] = 8; // work
+            p1JumpX = 20;
+            p1JumpY = 60;
+
+            p1MoveStamina[punch] = 15;
+            p1MoveStamina[kick] = 30;
+            p1MoveStamina[jumpKick] = 40;
+            p1MoveStamina[jumpPunch] = 30;
+            p1MoveStamina[special] = 30;
+        }
+
+        if (p2Char.equals("Ryu")) {
+            p2MoveLength[forward] = 3; // work
+            p2MoveLength[back] = 3; // work
+            p2MoveLength[punch] = 10; // work
+            p2MoveLength[kick] = 10; // sprite mis alligned (FIXED)
+            p2MoveLength[jump] = 7; // goes too down (FIXED)
+            p2MoveLength[duckBlock] = 48; // goes further down on the block (FIXED)
+            p2MoveLength[duckPunch] = 10; // work
+            p2MoveLength[duckKick] = 10; // work
+            p2MoveLength[duck] = 48; // work
+            p2MoveLength[knocked] = 8; // messed up
+            p2MoveLength[hit] = 5; // work
+            p2MoveLength[duckHit] = 5;
+            p2MoveLength[special] = 10;
+            p2MoveLength[knockedOut] = 10; // messed
+            p2MoveLength[idle] = 8; // work
+            p2JumpX = 20;
+            p2JumpY = 60;
+
+            p2MoveStamina[punch] = 15;
+            p2MoveStamina[kick] = 30;
+            p2MoveStamina[jumpKick] = 40;
+            p2MoveStamina[jumpPunch] = 30;
+            p2MoveStamina[special] = 30;
         }
     }
 }
